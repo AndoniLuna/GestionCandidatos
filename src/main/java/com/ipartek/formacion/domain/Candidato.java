@@ -5,6 +5,8 @@ import java.io.Serializable;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
+import com.ipartek.formacion.validator.Nif;
+
 public class Candidato implements Serializable {
 
 	private static final long serialVersionUID = 1L;
@@ -16,8 +18,7 @@ public class Candidato implements Serializable {
 	@Size(max = 50)
 	private String nombre;
 
-	// TODO UNIQUE
-	@Size(max = 10)
+	@Nif
 	private String dni;
 
 	public Candidato() {
@@ -83,7 +84,7 @@ public class Candidato implements Serializable {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see java.lang.Object#toString()
 	 */
 	@Override
