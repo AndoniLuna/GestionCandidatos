@@ -38,7 +38,7 @@
 	
 	<a href="candidato">Atras</a>
 	
-	<c:if test="${msg}">
+	<c:if test="${not empty msg}">
 		<div class="alert alert-success" role="alert" dismissible>
 			<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
 			${msg}
