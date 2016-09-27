@@ -12,10 +12,10 @@ import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCreator;
-import org.springframework.jdbc.core.simple.SimpleJdbcCall;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
@@ -26,15 +26,20 @@ import com.ipartek.formacion.repository.mapper.CandidatoMapper;
 @Repository("candidatoDAOImp")
 public class CandidatoDAOImp implements CandidatoDAO {
 
+	private static final Logger logger = LoggerFactory.getLogger(CandidatoDAOImp.class);
 	private static final long serialVersionUID = 1L;
 
 	@Autowired
 	private DataSource dataSource;
 
 	private JdbcTemplate jdbctemplate;
-	private SimpleJdbcCall jdbcCall;
 
-	private static final Logger logger = LoggerFactory.getLogger(CandidatoDAOImp.class);
+	@Autowired
+	@Override
+	public void setDataSource(DataSource dataSource) {
+		this.dataSource = dataSource;
+		this.jdbctemplate = new JdbcTemplate(this.dataSource);
+	}
 
 	@Override
 	public List<Candidato> getAll() {
@@ -88,25 +93,29 @@ public class CandidatoDAOImp implements CandidatoDAO {
 	public boolean insertar(final Candidato candidato) {
 		boolean resul = false;
 		int affectedRows = 0;
+		try {
+			final KeyHolder keyHolder = new GeneratedKeyHolder();
+			final String SQL = "INSERT INTO `candidatos` (`dni`, `nombre`) VALUES (? , ? )";
+			affectedRows = this.jdbctemplate.update(new PreparedStatementCreator() {
+				@Override
+				public PreparedStatement createPreparedStatement(Connection conn) throws SQLException {
+					final PreparedStatement ps = conn.prepareStatement(SQL, Statement.RETURN_GENERATED_KEYS);
+					ps.setString(1, candidato.getDni());
+					ps.setString(2, candidato.getNombre());
+					return ps;
+				}
+			}, keyHolder);
 
-		final KeyHolder keyHolder = new GeneratedKeyHolder();
-		final String SQL = "INSERT INTO `candidatos` (`dni`, `nombre`) VALUES (? , ? )";
-		affectedRows = this.jdbctemplate.update(new PreparedStatementCreator() {
-			@Override
-			public PreparedStatement createPreparedStatement(Connection conn) throws SQLException {
-				final PreparedStatement ps = conn.prepareStatement(SQL, Statement.RETURN_GENERATED_KEYS);
-				ps.setString(1, candidato.getDni());
-				ps.setString(2, candidato.getNombre());
-				return ps;
+			if (affectedRows == 1) {
+				candidato.setId(keyHolder.getKey().longValue());
+				resul = true;
 			}
-		}, keyHolder);
 
-		candidato.setId(keyHolder.getKey().longValue());
-
-		if (affectedRows != 0) {
-			resul = true;
+		} catch (DuplicateKeyException e) {
+			logger.warn("DuplicateKeyException " + e.getMessage());
+		} catch (Exception e) {
+			logger.error("No se puede insertar " + e.getMessage());
 		}
-
 		return resul;
 	}
 
@@ -141,14 +150,6 @@ public class CandidatoDAOImp implements CandidatoDAO {
 		}
 
 		return candidatos;
-	}
-
-	@Autowired
-	@Override
-	public void setDataSource(DataSource dataSource) {
-		this.dataSource = dataSource;
-		this.jdbctemplate = new JdbcTemplate(dataSource);
-		this.jdbcCall = new SimpleJdbcCall(dataSource);
 	}
 
 }

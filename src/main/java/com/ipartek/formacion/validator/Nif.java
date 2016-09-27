@@ -18,7 +18,7 @@ import javax.validation.Payload;
 @Documented
 public @interface Nif {
 
-	String message() default "{com.autentia.core.persistentce.constraints.nif}";
+	String message() default "Formato DNI incorrecto 11111111H";
 
 	Class<?>[] groups() default {};
 

@@ -37,7 +37,7 @@ public class CandidatoController {
 	/**
 	 * Mostrar listado de todos los candidatos
 	 *
-	 * 
+	 *
 	 * @return ModelAndView view: "index.jsp", model: { ArrayList
 	 *         &lt;Candidato&gt; "candidatos" , String "fecha" } OK
 	 */
@@ -62,10 +62,10 @@ public class CandidatoController {
 	/**
 	 * Crear candidato nuevo
 	 *
-	 * 
+	 *
 	 * @return ModelAndView view: "form.jsp", model: { Candidato candidato ,
 	 *         boolean "isNew" }
-	 * 
+	 *
 	 */
 	@RequestMapping(value = "/candidato/nuevo", method = RequestMethod.GET)
 	public ModelAndView crearNuevo() throws ServletException, IOException {
@@ -81,7 +81,7 @@ public class CandidatoController {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param candidato
 	 * @param bindingResult
 	 * @return
@@ -89,31 +89,30 @@ public class CandidatoController {
 	@RequestMapping(value = "/candidato/save", method = RequestMethod.POST)
 	public ModelAndView salvar(@Valid Candidato candidato, BindingResult bindingResult) {
 		this.logger.trace("Salvando candidato....");
-
-		boolean existeMsg = false;
-		String msg = "Insertado candidato";
+		String msg = "Problema al insertar candidato";
+		String view = "candidato/form";
+		final Map<String, Object> model = new HashMap<String, Object>();
 
 		if (bindingResult.hasErrors()) {
-			this.logger.warn("parametros no validos");
-			final Map<String, Object> model = new HashMap<String, Object>();
-			model.put("candidato", candidato);
-			return new ModelAndView("product/form", model);
+			this.logger.debug("parametros no validos");
+			msg = "Por favor rellenar los campos de forma correcta";
 		} else {
 
 			if (candidato.isNew()) {
-				this.candidatoManager.insertar(candidato);
-				existeMsg = true;
+				if (this.candidatoManager.insertar(candidato)) {
+					msg = "insertado correctamente";
+				}
+
 			} else {
-				this.candidatoManager.modificar(candidato);
-				msg = "Modificado candidato";
-				existeMsg = true;
+				if (this.candidatoManager.modificar(candidato)) {
+					msg = "Modificado correctamente";
+				}
 			}
-			final Map<String, Object> model = new HashMap<String, Object>();
-			model.put("candidato", candidato);
-			model.put("msg", msg);
-			model.put("existeMsg", existeMsg);
-			return new ModelAndView("candidato/form", model);
 		}
+
+		model.put("candidato", candidato);
+		model.put("msg", msg);
+		return new ModelAndView(view, model);
 
 	}
 
@@ -121,10 +120,10 @@ public class CandidatoController {
 	 * Mostrar detalle candidato por id
 	 *
 	 * @param id
-	 * 
+	 *
 	 * @return ModelAndView view: "index.jsp", model: { Candidato "candidato" ,
 	 *         Boolean "isNew" }
-	 * 
+	 *
 	 */
 	@RequestMapping(value = "/candidato/mostrar/{id}", method = RequestMethod.GET)
 	public ModelAndView verDetalle(@PathVariable(value = "id") final long id) {
@@ -138,16 +137,16 @@ public class CandidatoController {
 
 	/**
 	 * Eliminar candidato por id
-	 * 
+	 *
 	 * @param id
-	 * 
+	 *
 	 * @return ModelAndView view: "index.jsp", model: { ArrayList Candidato
 	 *         candidatos , String "fecha", String "msg", String "msgError" }
-	 * 
+	 *
 	 * @throws ServletException
 	 * @throws IOException
-	 * 
-	 * 
+	 *
+	 *
 	 */
 	@RequestMapping(value = "/candidato/eliminar/{id}", method = RequestMethod.GET)
 	public ModelAndView eliminar(@PathVariable(value = "id") final long id) throws ServletException, IOException {
@@ -182,12 +181,12 @@ public class CandidatoController {
 	 *
 	 * @param dni
 	 * @return
-	 * 
+	 *
 	 * @return ModelAndView view: "index.jsp", model: { ArrayList
 	 *         &lt;Candidato&gt; "candidatos" , String "fecha" }
 	 * @throws IOException
 	 * @throws ServletException
-	 * 
+	 *
 	 */
 	@RequestMapping(value = "/candidato/buscar/", method = RequestMethod.GET, params = "dni")
 	public ModelAndView buscar(String dni) throws ServletException, IOException {

@@ -5,6 +5,8 @@ import java.io.Serializable;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
+import org.hibernate.validator.constraints.NotEmpty;
+
 import com.ipartek.formacion.validator.Nif;
 
 public class Candidato implements Serializable {
@@ -14,8 +16,8 @@ public class Candidato implements Serializable {
 	@NotNull
 	private long id;
 
-	@NotNull
-	@Size(max = 50)
+	@NotEmpty
+	@Size(min = 2, max = 50)
 	private String nombre;
 
 	@Nif
